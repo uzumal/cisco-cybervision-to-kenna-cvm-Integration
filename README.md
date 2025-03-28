@@ -133,12 +133,6 @@ This validation includes:
   - `requests`
   - `python-dotenv`
 
-**Install dependencies:**
-
-```bash
-pip install -r requirements.txt
-```
-
 ---
 
 ## License
