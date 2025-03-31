@@ -153,9 +153,3 @@ Your support motivates us to maintain and improve this tool.
 
 This project is licensed under the **MIT License**.  
 See [LICENSE](./LICENSE) for details.
-
----
-
-## 🙌 Acknowledgement
-
-Special thanks to the Cyber Vision and Kenna Security communities for their ongoing efforts in security vulnerability management.
