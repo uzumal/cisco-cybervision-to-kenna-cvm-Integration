@@ -15,7 +15,7 @@ API_TOKEN = os.getenv("CV_API_TOKEN")
 VERIFY_SSL = os.getenv("CV_VERIFY_SSL", "False").lower() == "true"
 
 if not API_BASE_URL or not API_TOKEN:
-    print("❌ .env に CV_API_BASE_URL または CV_API_TOKEN が設定されていません")
+    print("❌ CV_API_BASE_URL or CV_API_TOKEN is not set in .env")
     sys.exit(1)
 
 HEADERS = {
@@ -32,65 +32,65 @@ def make_api_request(url, method="GET", json_data=None, max_retries=3, retry_del
             elif method == "PUT":
                 response = requests.put(url, headers=HEADERS, json=json_data, verify=VERIFY_SSL, timeout=30)
             else:
-                raise ValueError(f"不明なHTTPメソッド: {method}")
+                raise ValueError(f"Unknown HTTP method: {method}")
                 
             if response.status_code >= 400:
-                print(f"⚠️ API {method} エラー {url}: {response.status_code} - {response.text}")
+                print(f"⚠️ API {method} error {url}: {response.status_code} - {response.text}")
                 if attempt < max_retries - 1:
-                    print(f"   リトライ {attempt+1}/{max_retries}... {retry_delay}秒後")
+                    print(f"   Retrying {attempt+1}/{max_retries}... {retry_delay}seconds later")
                     time.sleep(retry_delay)
                     continue
             
             return response
             
         except requests.exceptions.RequestException as e:
-            print(f"⚠️ APIリクエスト例外 {url}: {e}")
+            print(f"⚠️ API request exception {url}: {e}")
             if attempt < max_retries - 1:
-                print(f"   リトライ {attempt+1}/{max_retries}... {retry_delay}秒後")
+                print(f"   Retrying {attempt+1}/{max_retries}... {retry_delay}seconds later")
                 time.sleep(retry_delay)
             else:
-                print(f"❌ 最大リトライ回数に達しました")
+                print(f"❌ 最大Retrying回数に達しました")
                 raise
     
-    raise Exception(f"APIエンドポイント {url} への接続に失敗しました")
+    raise Exception(f"Failed to connect to API endpoint {url}")
 
 def get_all_devices(max_retries=3, retry_delay=5):
-    print("🔍 プリセット一覧を取得中...")
+    print("🔍 Retrieving preset list...")
     
     try:
         presets_url = f"{API_BASE_URL}/presets"
         response = make_api_request(presets_url)
         if response.status_code != 200:
-            raise Exception(f"プリセット取得エラー: {response.status_code}")
+            raise Exception(f"Preset retrieval error: {response.status_code}")
         
         presets = response.json()
-        print(f"✅ {len(presets)}個のプリセットを取得しました")
+        print(f"✅ {len(presets)}presets retrieved")
         
         all_data_preset = next((p for p in presets if p["label"] == "All data"), None)
         if not all_data_preset:
             if presets:
                 all_data_preset = presets[0]
-                print(f"⚠️ プリセット 'All data' が見つかりません。代わりに '{all_data_preset['label']}' を使用します")
+                print(f"⚠️ Preset 'All data' not found。Using instead '{all_data_preset['label']}'")
             else:
-                raise Exception("利用可能なプリセットが見つかりません")
+                raise Exception("No available presets found")
 
         preset_id = all_data_preset["id"]
-        print(f"✅ プリセットID: {preset_id} '{all_data_preset['label']}'")
+        print(f"✅ Preset ID: {preset_id} '{all_data_preset['label']}'")
         
         # デバイス一覧を取得
         devices_url = f"{API_BASE_URL}/presets/{preset_id}/visualisations/networknode-list"
-        print(f"🔍 デバイス一覧を取得中: {devices_url}")
+        print(f"🔍 Retrieving device list: {devices_url}")
         
         response = make_api_request(devices_url)
         if response.status_code != 200:
-            raise Exception(f"デバイス一覧取得エラー: {response.status_code}")
+            raise Exception(f"Device list retrieval error: {response.status_code}")
         
         devices = response.json()
-        print(f"✅ {len(devices)}個のデバイス/コンポーネントを取得しました")
+        print(f"✅ {len(devices)}devices/components retrieved")
         return devices
         
     except Exception as e:
-        print(f"❌ デバイス取得中にエラーが発生しました: {e}")
+        print(f"❌ デバイス取得中にAn error occurred: {e}")
         # エラーを上位に伝播
         raise
 
@@ -101,15 +101,15 @@ def get_device_vulnerabilities(device_id, is_device=True, with_details=True):
         else:
             url = f"{API_BASE_URL}/components/{device_id}/vulnerabilities"
         
-        print(f"🔍 脆弱性情報取得中: {device_id}")
+        print(f"🔍 Retrieving vulnerability information: {device_id}")
         response = make_api_request(url)
         
         if response.status_code != 200:
-            print(f"⚠️ 脆弱性情報取得エラー: {response.status_code}")
+            print(f"⚠️ Vulnerability information retrieval error: {response.status_code}")
             return []
         
         vulns = response.json()
-        print(f"✅ 脆弱性情報 {len(vulns)}件 取得完了: {device_id}")
+        print(f"✅ vulnerability information {len(vulns)}retrieved successfully: {device_id}")
         
         if with_details and vulns:
             enhanced_vulns = []
@@ -123,7 +123,7 @@ def get_device_vulnerabilities(device_id, is_device=True, with_details=True):
                             if details:
                                 vuln.update(details[0])
                     except Exception as e:
-                        print(f"⚠️ 脆弱性詳細情報取得エラー {vuln['cve']}: {e}")
+                        print(f"⚠️ Detailed vulnerability information retrieval error {vuln['cve']}: {e}")
                 
                 enhanced_vulns.append(vuln)
             return enhanced_vulns
@@ -131,7 +131,7 @@ def get_device_vulnerabilities(device_id, is_device=True, with_details=True):
         return vulns
     
     except Exception as e:
-        print(f"❌ 脆弱性情報取得エラー: {e}")
+        print(f"❌ Vulnerability information retrieval error: {e}")
         raise
         
         if with_details and vulns:
@@ -146,7 +146,7 @@ def get_device_vulnerabilities(device_id, is_device=True, with_details=True):
                             if details:
                                 vuln.update(details[0])
                     except Exception as e:
-                        print(f"⚠️ 脆弱性詳細情報取得エラー {vuln['cve']}: {e}")
+                        print(f"⚠️ Detailed vulnerability information retrieval error {vuln['cve']}: {e}")
                 
                 enhanced_vulns.append(vuln)
             return enhanced_vulns
@@ -154,7 +154,7 @@ def get_device_vulnerabilities(device_id, is_device=True, with_details=True):
         return vulns
     
     except Exception as e:
-        print(f"❌ 脆弱性情報取得エラー: {e}")
+        print(f"❌ Vulnerability information retrieval error: {e}")
         raise
 
 def get_device_details(device_id, is_device=True):
@@ -164,19 +164,19 @@ def get_device_details(device_id, is_device=True):
         else:
             url = f"{API_BASE_URL}/components/{device_id}"
         
-        print(f"🔍 デバイス詳細情報取得中: {device_id}")
+        print(f"🔍 Retrieving device details: {device_id}")
         response = make_api_request(url)
         
         if response.status_code != 200:
-            print(f"⚠️ デバイス詳細情報取得エラー: {response.status_code}")
+            print(f"⚠️ Device details retrieval error: {response.status_code}")
             return {}
         
         device_data = response.json()
-        print(f"✅ デバイス詳細情報取得完了: {device_id}")
+        print(f"✅ Device details retrieved successfully: {device_id}")
         return device_data
         
     except Exception as e:
-        print(f"❌ デバイス詳細情報取得エラー: {e}")
+        print(f"❌ Device details retrieval error: {e}")
         return {}
 
 def get_device_risk_score_details(device_id, is_device=True):
@@ -186,19 +186,19 @@ def get_device_risk_score_details(device_id, is_device=True):
             
         url = f"{API_BASE_URL}/devices/{device_id}/riskScore"
         
-        print(f"🔍 リスクスコア詳細情報取得中: {device_id}")
+        print(f"🔍 Retrieving risk score details: {device_id}")
         response = make_api_request(url)
         
         if response.status_code != 200:
-            print(f"⚠️ リスクスコア詳細情報取得エラー: {response.status_code}")
+            print(f"⚠️ Risk score details retrieval error: {response.status_code}")
             return {}
         
         risk_data = response.json()
-        print(f"✅ リスクスコア詳細情報取得完了: {device_id}")
+        print(f"✅ Risk score details retrieved successfully: {device_id}")
         return risk_data
         
     except Exception as e:
-        print(f"❌ リスクスコア詳細情報取得エラー: {e}")
+        print(f"❌ Risk score details retrieval error: {e}")
         return {}
 
 def convert_numeric_cvss_to_text(cvss_float):
@@ -261,7 +261,7 @@ def get_formatted_date():
 def generate_finding_id(device_id, cve_id):
     return f"{device_id}_{cve_id}_{get_formatted_date()}"
 
-def export_to_csv(devices, output_file="cybervision_vulns.csv"):
+def export_to_csv(devices, output_file = "data/cybervision_vulns.csv"):
     current_date = get_formatted_date()
     
     if os.path.exists(output_file):
@@ -269,9 +269,9 @@ def export_to_csv(devices, output_file="cybervision_vulns.csv"):
         try:
             import shutil
             shutil.copy2(output_file, backup_file)
-            print(f"✅ 既存ファイルのバックアップを作成しました: {backup_file}")
+            print(f"✅ Created a backup of the existing file: {backup_file}")
         except Exception as e:
-            print(f"⚠️ バックアップ作成エラー: {e}")
+            print(f"⚠️ Error while creating backup: {e}")
     
     try:
         with open(output_file, mode="w", encoding="utf-8", newline="") as csvfile:
@@ -402,45 +402,45 @@ def export_to_csv(devices, output_file="cybervision_vulns.csv"):
                     writer.writerow(row)
                     count += 1
             
-            print(f"✅ {count}件の脆弱性情報を出力しました：{output_file}")
+            print(f"✅ {count}件のVulnerability information has been exported：{output_file}")
             return count
             
     except Exception as e:
-        print(f"❌ CSVファイル出力エラー: {e}")
+        print(f"❌ CSV file export error: {e}")
         import traceback
         traceback.print_exc()
         raise
 
 if __name__ == "__main__":
     try:
-        print("🚀 Cisco Cyber Vision 脆弱性CSVエクスポートツール")
-        print(f"📅 実行日時: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        print("🚀 Cisco Cyber Vision Vulnerability CSV Export Tool")
+        print(f"📅 Execution date: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
         print(f"🔌 API URL: {API_BASE_URL}")
         
-        output_file = "cybervision_vulns.csv"
-        print(f"📁 出力ファイル: {output_file}")
+        output_file = "data/cybervision_vulns.csv"
+        print(f"📁 Output file: {output_file}")
         
-        print("🔍 API接続テスト中...")
+        print("🔍 Testing API connectivity...")
         try:
             test_url = f"{API_BASE_URL}/version"
             response = make_api_request(test_url)
             if response.status_code == 200:
                 version_info = response.json()
-                print(f"✅ API接続成功 - Cyber Vision バージョン: {version_info.get('version', 'Unknown')}")
+                print(f"✅ API connection successful - Cyber Vision : {version_info.get('version', 'Unknown')}")
             else:
-                print(f"⚠️ API接続テスト - ステータスコード: {response.status_code}")
+                print(f"⚠️ API connectivity test - status code: {response.status_code}")
         except Exception as e:
-            print(f"⚠️ API接続テスト失敗: {e}")
-            print("⚠️ 処理を続行します...")
+            print(f"⚠️ API connectivity test failed: {e}")
+            print("⚠️ Continuing the process...")
         
-        print("🔍 デバイス情報を取得中...")
+        print("🔍 Retrieving device information...")
         devices = get_all_devices()
         
         if not devices:
-            print("⚠️ デバイスが見つかりませんでした。処理を中止します。")
+            print("⚠️ No devices found. Terminating the process.")
             sys.exit(1)
             
-        print(f"✅ デバイス数: {len(devices)}")
+        print(f"✅ Number of devices: {len(devices)}")
         
         vuln_devices = []
         for device in devices:
@@ -448,26 +448,26 @@ if __name__ == "__main__":
                 vuln_devices.append(device)
         
         if not vuln_devices:
-            print("⚠️ 脆弱性情報を持つデバイスが見つかりませんでした。")
-            print(f"💡 参考: 全{len(devices)}デバイス中、脆弱性ありは0デバイスです。")
+            print("⚠️ No devices with vulnerabilities were found。")
+            print(f"💡 Reference: In {len(devices)} Devices、vulnerability information Number of devices is 0")
             
-            print("📝 空のCSVファイルを出力します...")
+            print("📝 Exporting an empty CSV file...")
             count = export_to_csv([], output_file)
-            print(f"✅ 空のCSVファイルを出力しました: {output_file}")
+            print(f"✅ Exported an empty CSV file: {output_file}")
             sys.exit(0)
         
-        print(f"🔍 脆弱性情報を持つデバイス数: {len(vuln_devices)}/{len(devices)}")
-        print("📝 CSVファイルへの出力を開始します...")
+        print(f"🔍 vulnerability information Number of devices: {len(vuln_devices)}/{len(devices)}")
+        print("📝 Starting export to CSV file...")
         count = export_to_csv(vuln_devices, output_file)
         
-        print(f"🎉 完了しました！{count}件の脆弱性情報を {output_file} に出力しました。")
+        print(f"🎉 Completed！{count}vulnerability records exported to {output_file}")
         sys.exit(0)
         
     except KeyboardInterrupt:
-        print("\n⚠️ 処理がユーザーにより中断されました")
+        print("\n⚠️ Process interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ エラーが発生しました: {e}")
+        print(f"❌ An error occurred: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

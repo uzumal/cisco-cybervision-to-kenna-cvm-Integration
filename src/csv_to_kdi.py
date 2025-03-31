@@ -25,7 +25,7 @@ def normalize_to_string(value):
     return str(value) if value else "None"
 
 def get_command_line_options():
-    parser = argparse.ArgumentParser(description="CSV to KDI JSON 完全版 (Tag対応)")
+    parser = argparse.ArgumentParser(description="CSV to KDI JSON Full Version (Tag Supported)")
     parser.add_argument("csv_in", help="CSV input file")
     parser.add_argument("-m", "--meta_file", dest="meta_file_name", required=True, help="Meta mapping file")
     parser.add_argument("-o", "--output_file", dest="output_file_name", required=True, help="Output KDI JSON file")
@@ -41,7 +41,6 @@ def read_meta(meta_file):
         for row in reader:
             field_map[row[0]] = row[1]
 
-    # タグフィールドを配列に変換
     if 'tags' in field_map and field_map['tags']:
         field_map['tags'] = [t.strip() for t in field_map['tags'].split(',') if t.strip()]
 
@@ -159,6 +158,6 @@ if __name__ == "__main__":
     field_map = read_meta(args.meta_file_name)
     kdi_json = {"skip_autoclose": args.skip_autoclose, "assets": [], "vuln_defs": []}
     process_input(args.csv_in, kdi_json, field_map, args.domain_suffix)
-    with open(args.output_file_name, 'w') as f:
+    with open(f"data/{os.path.basename(args.output_file_name)}", 'w') as f:
         json.dump(kdi_json, f, indent=2)
-    print(f"✅ KDI JSONファイルを出力しました: {args.output_file_name}")
+    print(f"✅ KDI JSON file has been exported: {args.output_file_name}")

@@ -1,39 +1,83 @@
-# Cisco Cyber Vision to Kenna Security Integration
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Last Commit](https://img.shields.io/github/last-commit/uzumal/cisco-kenna-cvm-cybervision-importer)
+# 🚀 Cisco Cyber Vision to Kenna Security Integration
 
-This repository provides a complete toolset to extract vulnerability data from Cisco Cyber Vision, transform it into Kenna Security KDI (Kenna Data Importer) format, and upload it to Kenna Security.
-
----
-
-## Preview
+A complete, ready-to-use toolkit to **extract vulnerabilities from Cisco Cyber Vision**, convert them into **Kenna Security's KDI (Kenna Data Importer) format**, and seamlessly **upload and validate them**.
 
 <p align="center">
-  <img width = "400" height = "207" alt="Kenna Security/CVM" src="https://github.com/user-attachments/assets/66de3461-4fe1-40a1-9fa3-6d774bf9c168">
-  <img width = "400" height = "207"　alt="CyberVision" src="https://github.com/user-attachments/assets/492bde21-9bef-45eb-8549-7fed7805997a">
+  <img width="400" height="207" alt="Kenna Security Integration" src="https://github.com/user-attachments/assets/66de3461-4fe1-40a1-9fa3-6d774bf9c168">
+  <img width="400" height="207" alt="Cisco Cyber Vision" src="https://github.com/user-attachments/assets/492bde21-9bef-45eb-8549-7fed7805997a">
 </p>
 
 ---
 
-## Overview
+## ⭐ Why this project?
 
-The integration consists of the following key components:
-
-| Component                             | Description                                                       |
-|-------------------------------------|-------------------------------------------------------------------|
-| **Cyber Vision Vulnerability Exporter** | Extracts vulnerabilities from Cyber Vision API and outputs them to CSV. |
-| **CSV to KDI Converter**            | Converts the CSV file to Kenna Security's KDI JSON format.        |
-| **Kenna KDI Uploader**              | Uploads the KDI JSON to Kenna Security via API.                   |
-| **KDI Validator**                   | Validates the generated KDI JSON file against required specifications. |
+This toolset automates the **time-consuming and error-prone process** of integrating Cyber Vision vulnerability data into Kenna Security, following the KDI specification.  
+If you're managing **OT/IT convergence security** and struggling with data conversion and API integration, this is for you.
 
 ---
 
-## Environment Variables
+## 🔥 Quick Start
 
-All environment-specific parameters are managed via a `.env` file.
+1. **Clone this repository**
+    ```bash
+    git clone https://github.com/uzumal/cisco-kenna-cvm-cybervision-importer.git
+    cd cisco-kenna-cvm-cybervision-importer
+    ```
 
-**Example `.env` file:**
+2. **Prepare `.env` file**
+    ```bash
+    cp .env.sample .env
+    # Edit your API keys & endpoint info in .env
+    ```
 
-```env
-# Cyber Vision API
+3. **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Run end-to-end integration**
+    ```bash
+    python src/export_vuln_csv.py
+    python src/csv_to_kdi.py data/cybervision_vulns.csv -m data/default_meta.csv -o data/cybervision_vulns_kdi_fixed.json -s
+    python src/kdi_validator.py data/cybervision_vulns_kdi_fixed.json
+    python src/upload_kdi_to_kenna.py upload data/cybervision_vulns_kdi_fixed.json --run --monitor
+    ```
+
+---
+
+## 🗂️ Project Structure
+
+```
+cisco-kenna-cvm-cybervision-importer/
+├── src/
+│   ├── csv_to_kdi.py
+│   ├── export_vuln_csv.py
+│   ├── kdi_validator.py
+│   └── upload_kdi_to_kenna.py
+├── data/
+│   ├── sample_vulns.csv
+│   ├── default_meta.csv
+│   └── sample_kdi_output.json
+├── .env.sample
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── SECURITY.md
+```
+
+---
+
+## 🌐 Environment Variables
+
+All parameters are configured in a `.env` file.
+
+Example:
+
+```bash
+# Cisco Cyber Vision API
 CV_API_BASE_URL=https://198.18.135.164/api/3.0
 CV_API_TOKEN=ics-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 CV_VERIFY_SSL=False
@@ -42,108 +86,76 @@ CV_VERIFY_SSL=False
 KENNA_API_KEY=e-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 KENNA_CONNECTOR_ID=165204
 KENNA_API_HOST=https://api.labs.us.kennasecurity.com
-KDI_FILENAME=cybervision_vulns_kdi.json
+KDI_FILENAME=data/cybervision_vulns_kdi_fixed.json
 CHECK_INTERVAL=30
 TIMEOUT=180
 ```
 
 ---
 
-## Usage
+## ⚙️ Usage
 
-### 1. Export Vulnerability Data from Cyber Vision
-
-Extract vulnerability and device information from Cisco Cyber Vision and output to a CSV file.
+### 1. Export Vulnerabilities from Cyber Vision
 
 ```bash
-python export_vuln_csv.py
+python src/export_vuln_csv.py
 ```
-
-**Output:**  
-`cybervision_vulns.csv`
+**Output:** `data/cybervision_vulns.csv`
 
 ---
 
-### 2. Convert CSV to KDI JSON Format
-
-Converts the exported CSV to Kenna Security's KDI JSON format.
+### 2. Convert CSV to KDI Format
 
 ```bash
-python csv_to_kdi.py cybervision_vulns.csv -m default_meta.csv -o cybervision_vulns_kdi_fixed.json -s
+python src/csv_to_kdi.py data/cybervision_vulns.csv -m data/default_meta.csv -o data/cybervision_vulns_kdi_fixed.json -s
 ```
 
-**Parameters:**
-
-| Parameter | Description                                     |
-|---------|-------------------------------------------------|
-| `-m`    | Meta mapping file (required)                    |
-| `-o`    | Output KDI JSON file name                       |
-| `-s`    | Skip autoclose option (optional)                |
-
-**Output:**  
-`cybervision_vulns_kdi_fixed.json`
+**Output:** `data/cybervision_vulns_kdi_fixed.json`
 
 ---
 
-### 3. Upload KDI File to Kenna Security
-
-Uploads the generated KDI JSON file to Kenna Security and optionally triggers and monitors the connector run.
+### 3. Validate KDI JSON
 
 ```bash
-python upload_kdi_to_kenna.py upload cybervision_vulns_kdi_fixed.json --run --monitor
+python src/kdi_validator.py data/cybervision_vulns_kdi_fixed.json
 ```
-
-**Parameters:**
-
-| Parameter    | Description                                        |
-|------------|----------------------------------------------------|
-| `upload`   | Upload action                                      |
-| `<file>`   | KDI file to upload                                 |
-| `--run`    | Trigger the connector run immediately after upload |
-| `--monitor`| Monitor connector run status until completion      |
 
 ---
 
-### 4. Validate KDI JSON File
-
-Validates the structure and required fields of the generated KDI JSON file.
+### 4. Upload KDI to Kenna Security
 
 ```bash
-python kdi_validator.py cybervision_vulns_kdi_fixed.json
-```
-
-This validation includes:
-
-- `mac_address` and `os` fields are of type `string`
-- `findings` field exists and is a `list`
-- Each `vuln_def` entry contains both `scanner_identifier` and `scanner_type`
-
----
-
-## Directory Structure
-
-```
-├── export_vuln_csv.py                # Cyber Vision Vulnerability Exporter
-├── csv_to_kdi.py                     # CSV to KDI Converter
-├── upload_kdi_to_kenna.py            # KDI Uploader
-├── kdi_validator.py                  # KDI Validator
-├── default_meta.csv                  # Field mapping file
-├── .env                              # Environment variables file
-├── cybervision_vulns.csv             # Example: Exported vulnerability CSV
-├── cybervision_vulns_kdi_fixed.json  # Example: Converted KDI JSON file
+python src/upload_kdi_to_kenna.py upload data/cybervision_vulns_kdi_fixed.json --run --monitor
 ```
 
 ---
 
-## Requirements
+## 📄 Requirements
 
 - Python 3.8+
 - Dependencies:
-  - `requests`
-  - `python-dotenv`
+    - `requests`
+    - `python-dotenv`
 
 ---
 
-## License
+## 🤝 Contributing
 
-This project is licensed under the Cisco Sample Code License.
+Contributions, issues, and feature requests are welcome!  
+Feel free to fork this project and submit a Pull Request.
+
+If you find this repository useful, **please give it a ⭐️ Star!**  
+Your support motivates us to maintain and improve this tool.
+
+---
+
+## 🛡️ License
+
+This project is licensed under the **MIT License**.  
+See [LICENSE](./LICENSE) for details.
+
+---
+
+## 🙌 Acknowledgement
+
+Special thanks to the Cyber Vision and Kenna Security communities for their ongoing efforts in security vulnerability management.
