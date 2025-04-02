@@ -1,6 +1,9 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Last Commit](https://img.shields.io/github/last-commit/uzumal/cisco-kenna-cvm-cybervision-importer)
+![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)
+
+https://developer.cisco.com/codeexchange/github/repo/uzumal/cisco-cybervision-to-kenna-cvm-Integration
 # 🚀 Cisco Cyber Vision to Kenna Security Integration
 
 A complete, ready-to-use toolkit to **extract vulnerabilities from Cisco Cyber Vision**, convert them into **Kenna Security's KDI (Kenna Data Importer) format**, and seamlessly **upload and validate them**.
